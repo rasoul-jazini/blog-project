@@ -1,14 +1,16 @@
 import { useQuery } from "@apollo/client";
 import { Avatar, CardMedia, Divider, Grid, Typography } from "@mui/material";
 import React from "react";
+import { Link } from "react-router-dom";
 import { GET_AUTHORS_INFO } from "../../graphql/queries";
+import Loader from "../shared/Loader";
 
 const Authors = () => {
   const { loading, data, error } = useQuery(GET_AUTHORS_INFO);
 
-  if (error) return <h3>Something went wrong...</h3>;
+  if (loading) return <Loader />;
 
-  if (loading) return <h3>Loading...</h3>;
+  if (error) return <h3>Something went wrong...</h3>;
 
   return (
     <Grid
@@ -18,8 +20,8 @@ const Authors = () => {
       {data.authors.map((author, index) => (
         <React.Fragment key={author.id}>
           <Grid item xs={12} padding={2}>
-            <a
-              href={`/authors/${author.slug}`}
+            <Link
+              to={`/authors/${author.slug}`}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -31,7 +33,7 @@ const Authors = () => {
               <Typography component="p" variant="p" color="text.secondary">
                 {author.name}
               </Typography>
-            </a>
+            </Link>
           </Grid>
           {index !== data.authors.length - 1 && (
             <Grid item xs={12}>
