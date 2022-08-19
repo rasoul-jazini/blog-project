@@ -8,6 +8,7 @@ import theme from "./mui/them";
 
 import "./styles/index.css";
 import "./styles/fonts.css";
+import RTL from "./mui/CacheProvider";
 
 const client = new ApolloClient({
   uri: process.env.REACT_APP_GRAPHCMS_URI,
@@ -17,10 +18,12 @@ const client = new ApolloClient({
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ApolloProvider client={client}>
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <App />
-      </ThemeProvider>
-    </BrowserRouter>
+    <RTL>
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          <App />
+        </ThemeProvider>
+      </BrowserRouter>
+    </RTL>
   </ApolloProvider>
 );
