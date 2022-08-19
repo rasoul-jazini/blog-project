@@ -1,45 +1,60 @@
-import { useEffect, useState } from "react";
+import { useFormik } from "formik";
+import * as yup from "yup";
 import { Button, Grid, TextField, Typography } from "@mui/material";
 import { useMutation } from "@apollo/client";
 import { SEND_COMMENT } from "../../graphql/mutations";
 import toast from "react-hot-toast";
 
+const initialValues = {
+  name: "",
+  email: "",
+  text: "",
+};
+
+const validationSchema = yup.object({
+  name: yup
+    .string()
+    .required("نام کاربری ضروری می باشد.")
+    .min(6, "نام کاربری شما باید دارای حداقل 6 کاراکتر باشد."),
+  email: yup
+    .string()
+    .email("ایمیل شما نامعتبر است.")
+    .required("ایمیل ضروری است."),
+  text: yup
+    .string()
+    .required("پر کردن فیلد کامنت ضروری می باشد.")
+    .min(15, "کامنت شما باید دارای حداقل 15 کاراکتر باشد."),
+});
+
 const CommentForm = ({ slug }) => {
-  const [formData, setFormData] = useState({ name: "", email: "", text: "" });
-  const [pressed, setPressed] = useState(false);
-
-  const [sendComment, { loading, data }] = useMutation(SEND_COMMENT, {
-    variables: {
-      name: formData.name,
-      email: formData.email,
-      text: formData.text,
-      slug,
-    },
-  });
-
-  const changeHandler = (e) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
   const sendCommentHandler = () => {
-    if (formData.name && formData.email && formData.text) {
-      sendComment();
-      setFormData({ name: "", email: "", text: "" });
-      setPressed(true);
+    if (formik.values.name || formik.values.email || formik.values.text) {
+      if (Object.values(formik.errors).length !== 0) {
+        toast.error(Object.values(formik.errors)[0]);
+      } else {
+        sendComment();
+        toast.success("کامنت ارسال شد و منتظر تایید می باشد.");
+        formik.resetForm();
+      }
     } else {
       toast.error("لطفا تمام فیلدها را پر کنید.");
     }
   };
 
-  useEffect(() => {
-    if (data && pressed) {
-      toast.success("کامنت ارسال شد و منتظر تایید می باشد.");
-      setPressed(false);
-    }
-  }, [data, pressed]);
+  const formik = useFormik({
+    initialValues,
+    onSubmit: sendCommentHandler,
+    validationSchema,
+  });
+
+  const [sendComment, { loading }] = useMutation(SEND_COMMENT, {
+    variables: {
+      name: formik.values.name,
+      email: formik.values.email,
+      text: formik.values.text,
+      slug,
+    },
+  });
 
   return (
     <Grid
@@ -62,8 +77,7 @@ const CommentForm = ({ slug }) => {
           name="name"
           variant="outlined"
           sx={{ width: "100%" }}
-          value={formData.name}
-          onChange={changeHandler}
+          {...formik.getFieldProps("name")}
         />
       </Grid>
       <Grid item xs={12} m={2}>
@@ -72,8 +86,7 @@ const CommentForm = ({ slug }) => {
           name="email"
           variant="outlined"
           sx={{ width: "100%" }}
-          value={formData.email}
-          onChange={changeHandler}
+          {...formik.getFieldProps("email")}
         />
       </Grid>
       <Grid item xs={12} m={2}>
@@ -82,8 +95,7 @@ const CommentForm = ({ slug }) => {
           name="text"
           variant="outlined"
           sx={{ width: "100%" }}
-          value={formData.text}
-          onChange={changeHandler}
+          {...formik.getFieldProps("text")}
           multiline
           minRows={4}
         />
